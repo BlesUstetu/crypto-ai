@@ -1,6 +1,6 @@
-import ChatAI from "../components/ChatAI";
-import MarketData from "../components/MarketData";
-import SignalPanel from "../components/SignalPanel";
+import ChatAI from "../components/ChatAI.jsx";
+import MarketData from "../components/MarketData.jsx";
+import SignalPanel from "../components/SignalPanel.jsx";
 
 export default function Home() {
   return (
