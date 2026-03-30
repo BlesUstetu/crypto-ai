@@ -2,57 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =========================
-   GLASS EFFECT (UPGRADE)
-========================= */
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-.glass:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* =========================
-   BACKGROUND (OPTIMIZED)
-========================= */
 body {
-  @apply text-white;
-  background: linear-gradient(-45deg, #0b0f14, #0d1117, #0a0f1c, #0b0f14);
-  background-size: 300% 300%;
-  animation: gradientMove 20s ease infinite;
+  background: linear-gradient(-45deg, #0b0f14, #0d1117, #0a0f1c);
 }
 
-/* =========================
-   ANIMATION (SMOOTHER)
-========================= */
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* =========================
-   SCROLLBAR (PRO LOOK)
-========================= */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
 }
