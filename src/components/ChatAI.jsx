@@ -36,7 +36,7 @@ export default function ChatAI() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Contoh: LONG BTC ENTRY 100000 SL 98000 TP 105000"
+          placeholder="LONG BTC ENTRY 100000 SL 98000 TP 105000"
         />
         <button className="button" onClick={send}>
           Send
@@ -47,7 +47,7 @@ export default function ChatAI() {
 }
 
 /* =========================
-   AI ANALYSIS (PRO FORMAT)
+   AI ANALYSIS (SAFE)
 ========================= */
 function generateAnalysis(s) {
   if (!s.side) return "❌ Signal tidak valid";
@@ -56,45 +56,60 @@ function generateAnalysis(s) {
   const tp = s.tp ?? "-";
   const sl = s.sl ?? "-";
 
-  let rr = null;
+  let rr = "-";
   let quality = "NEUTRAL";
 
-  if (s.entry && s.tp && s.sl) {
-    rr = (
-      Math.abs(s.tp - s.entry) / Math.abs(s.entry - s.sl)
-    ).toFixed(2);
+  if (s.entry && s.tp && s.sl && s.entry !== s.sl) {
+    const value =
+      Math.abs(s.tp - s.entry) / Math.abs(s.entry - s.sl);
 
-    if (rr >= 2) quality = "GOOD";
-    else if (rr >= 1) quality = "OK";
-    else quality = "BAD";
+    if (isFinite(value)) {
+      rr = value.toFixed(2);
+
+      if (value >= 2) quality = "GOOD";
+      else if (value >= 1) quality = "OK";
+      else quality = "BAD";
+    }
   }
 
-  return `
-📊 SIGNAL: ${s.side}
-
-Entry : ${entry}
-TP    : ${tp}
-SL    : ${sl}
-
-RR    : ${rr ?? "-"}  (${quality})
-`.trim();
+  return {
+    side: s.side,
+    entry,
+    tp,
+    sl,
+    rr,
+    quality,
+  };
 }
 
 /* =========================
-   FORMATTER (COLOR LOGIC)
+   FORMATTER (STRUCTURED)
 ========================= */
-function formatMessage(text) {
-  if (!text.includes("RR")) return text;
+function formatMessage(data) {
+  // jika user message (string biasa)
+  if (typeof data === "string") return data;
 
-  if (text.includes("GOOD")) {
-    return <span className="good">{text}</span>;
-  }
-  if (text.includes("BAD")) {
-    return <span className="bad">{text}</span>;
-  }
-  if (text.includes("OK")) {
-    return <span className="neutral">{text}</span>;
-  }
+  return (
+    <div style={{ whiteSpace: "pre-line" }}>
+      <div>📊 SIGNAL: {data.side}</div>
 
-  return text;
+      <br />
+
+      <div>Entry : {data.entry}</div>
+      <div>TP    : {data.tp}</div>
+      <div>SL    : {data.sl}</div>
+
+      <br />
+
+      <div className={getClass(data.quality)}>
+        RR : {data.rr} ({data.quality})
+      </div>
+    </div>
+  );
+}
+
+function getClass(q) {
+  if (q === "GOOD") return "good";
+  if (q === "BAD") return "bad";
+  return "neutral";
 }
