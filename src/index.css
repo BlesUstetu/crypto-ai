@@ -1,0 +1,91 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+/* BACKGROUND */
+body {
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+/* CONTAINER */
+.app {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 20px;
+}
+
+/* TITLE */
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* CARD (glass effect) */
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* INPUT GROUP */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+/* INPUT */
+input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: #020617;
+  color: white;
+  border: 1px solid #1e293b;
+}
+
+input:focus {
+  border: 1px solid #38bdf8;
+}
+
+/* BUTTON */
+button {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  color: white;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+/* CHAT */
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* CHAT ITEM */
+.chat-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #020617;
+  border: 1px solid #1e293b;
+}
