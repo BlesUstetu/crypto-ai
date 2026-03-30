@@ -1,63 +1,85 @@
 export default async function handler(req, res) {
+  const { symbol = "BTCUSDT" } = req.query;
+
   try {
-    const { symbol = "BTCUSDT", interval = "1m" } = req.query;
+    // =========================
+    // 1. COBA BINANCE
+    // =========================
+    const binance = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=100`
+    );
 
-    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=100`;
+    if (binance.ok) {
+      const raw = await binance.json();
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+      const candles = raw.map((c) => ({
+        time: c[0] / 1000,
+        open: +c[1],
+        high: +c[2],
+        low: +c[3],
+        close: +c[4],
+      }));
 
-    const response = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
-
-    clearTimeout(timeout);
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("BINANCE ERROR:", text);
-      throw new Error("Binance API failed");
+      return res.status(200).json({
+        success: true,
+        source: "binance",
+        data: candles,
+      });
     }
 
-    const raw = await response.json();
-
-    if (!Array.isArray(raw)) {
-      throw new Error("Invalid kline data");
-    }
-
-    const candles = raw.map((c) => ({
-      time: Math.floor(c[0] / 1000),
-      open: parseFloat(c[1]),
-      high: parseFloat(c[2]),
-      low: parseFloat(c[3]),
-      close: parseFloat(c[4]),
-    }));
-
-    return res.status(200).json({
-      success: true,
-      data: candles,
-    });
+    throw new Error("Binance failed");
 
   } catch (err) {
-    console.error("KLINE ERROR:", err.message);
+    console.warn("BINANCE FAIL → fallback:", err.message);
 
-    // 🔥 FALLBACK DATA (biar chart tetap tampil)
-    const fallback = Array.from({ length: 50 }).map((_, i) => ({
-      time: Math.floor(Date.now() / 1000) - (50 - i) * 60,
-      open: 67000,
-      high: 67100,
-      low: 66900,
-      close: 67050,
-    }));
+    try {
+      // =========================
+      // 2. FALLBACK: COINGECKO
+      // =========================
+      const cg = await fetch(
+        "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1"
+      );
 
-    return res.status(200).json({
-      success: true,
-      fallback: true,
-      data: fallback,
-      error: err.message,
-    });
+      const data = await cg.json();
+
+      const candles = data.prices.slice(-100).map((p, i, arr) => {
+        const price = p[1];
+        return {
+          time: Math.floor(p[0] / 1000),
+          open: price,
+          high: price,
+          low: price,
+          close: price,
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        source: "coingecko",
+        data: candles,
+      });
+
+    } catch (err2) {
+      console.error("ALL API FAIL:", err2.message);
+
+      // =========================
+      // 3. LAST FALLBACK (DUMMY)
+      // =========================
+      const now = Math.floor(Date.now() / 1000);
+
+      const dummy = Array.from({ length: 100 }).map((_, i) => ({
+        time: now - (100 - i) * 60,
+        open: 67000,
+        high: 67100,
+        low: 66900,
+        close: 67050,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        source: "dummy",
+        data: dummy,
+      });
+    }
   }
 }
