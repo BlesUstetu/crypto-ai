@@ -1,27 +1,19 @@
-
 import { useTradingStore } from "../store/tradingStore";
 
 export default function SignalPanel() {
-  const { signal, entry, tp, sl, confidence } = useTradingStore();
-
-  const color =
-    signal === "BUY" ? "text-buy shadow-buy" :
-    signal === "SELL" ? "text-sell shadow-sell" :
-    "text-gray-400";
+  const { signal } = useTradingStore();
 
   return (
-    <div className="flex justify-between items-center h-full">
-      <div>
-        <div className="text-sm text-gray-400">Signal</div>
-        <div className={`text-4xl font-bold ${color}`}>{signal || "WAIT"}</div>
-      </div>
-      <div className="text-sm space-y-1">
-        <div>Entry: {entry || "-"}</div>
-        <div>TP: {tp || "-"}</div>
-        <div>SL: {sl || "-"}</div>
-      </div>
-      <div className="text-sm text-gray-400">
-        Confidence: {confidence || 0}%
+    <div>
+      <div className="text-gray-400 text-sm">Signal</div>
+
+      <div className="text-2xl font-bold">{signal.type}</div>
+
+      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+        <div>Entry: {signal.entry}</div>
+        <div>TP: {signal.tp}</div>
+        <div>SL: {signal.sl}</div>
+        <div>Confidence: {signal.confidence}</div>
       </div>
     </div>
   );
