@@ -1,4 +1,26 @@
-export function parseSignal(text) {
+export function parseInput(text) {
+  const upper = text.toUpperCase();
+
+  const isSignal =
+    upper.includes("LONG") ||
+    upper.includes("SHORT") ||
+    upper.includes("ENTRY");
+
+  if (isSignal) {
+    return {
+      type: "signal",
+      data: parseSignal(text),
+    };
+  }
+
+  return {
+    type: "analysis",
+    data: text,
+  };
+}
+
+/* ===== SIGNAL PARSER ===== */
+function parseSignal(text) {
   const upper = text.toUpperCase();
 
   return {
