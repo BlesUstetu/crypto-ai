@@ -1,30 +1,25 @@
 export default async function handler(req, res) {
   try {
-    console.log("MARKET API HIT")
+    const url = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT";
 
-    const response = await fetch(
-      "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"
-    )
+    const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error("Binance API error")
+      throw new Error("Binance response not OK");
     }
 
-    const data = await response.json()
+    const data = await response.json();
 
-    return res.status(200).json({
-      success: true,
-      symbol: data.symbol,
-      price: parseFloat(data.price),
-      time: Date.now(),
-    })
+    res.status(200).json({
+      price: data.price
+    });
 
   } catch (err) {
-    console.error("MARKET ERROR:", err.message)
+    console.error("MARKET ERROR:", err.message);
 
-    return res.status(500).json({
-      success: false,
-      error: err.message,
-    })
+    res.status(200).json({
+      price: null,
+      error: "Binance API error"
+    });
   }
 }
