@@ -8,8 +8,15 @@ export default function ChatAI() {
   const send = () => {
     if (!input) return;
 
-    const signal = parseSignal(input);
-    const aiResponse = generateAnalysis(signal);
+    const parsed = parseInput(input);
+
+    let aiResponse;
+
+    if (parsed.type === "signal") {
+      aiResponse = generateSignalAnalysis(parsed.data);
+    } else {
+      aiResponse = generateMarketResponse(parsed.data);
+    }
 
     setMessages((prev) => [
       ...prev,
@@ -36,7 +43,7 @@ export default function ChatAI() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="LONG BTC ENTRY 100000 SL 98000 TP 105000"
+          placeholder="Contoh: LONG BTC ENTRY 100000 SL 98000 TP 105000"
         />
         <button className="button" onClick={send}>
           Send
@@ -47,9 +54,9 @@ export default function ChatAI() {
 }
 
 /* =========================
-   AI ANALYSIS (SAFE)
+   SIGNAL ANALYSIS
 ========================= */
-function generateAnalysis(s) {
+function generateSignalAnalysis(s) {
   if (!s.side) return "❌ Signal tidak valid";
 
   const entry = s.entry ?? "-";
@@ -73,6 +80,7 @@ function generateAnalysis(s) {
   }
 
   return {
+    type: "signal",
     side: s.side,
     entry,
     tp,
@@ -83,11 +91,33 @@ function generateAnalysis(s) {
 }
 
 /* =========================
-   FORMATTER (STRUCTURED)
+   MARKET ANALYSIS (SIMPLE AI)
+========================= */
+function generateMarketResponse(text) {
+  const lower = text.toLowerCase();
+
+  if (lower.includes("btc") || lower.includes("bitcoin")) {
+    return {
+      type: "analysis",
+      text: "📊 BTC: Market cenderung sideways. Tunggu breakout atau konfirmasi trend.",
+    };
+  }
+
+  return {
+    type: "analysis",
+    text: "📊 Market: Belum ada signal jelas. Hindari entry tanpa konfirmasi.",
+  };
+}
+
+/* =========================
+   RENDER FORMAT
 ========================= */
 function formatMessage(data) {
-  // jika user message (string biasa)
   if (typeof data === "string") return data;
+
+  if (data.type === "analysis") {
+    return data.text;
+  }
 
   return (
     <div style={{ whiteSpace: "pre-line" }}>
