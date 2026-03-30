@@ -1,5 +1,4 @@
 import ChatAI from "../components/ChatAI";
-import MarketData from "../components/MarketData";
 import SignalPanel from "../components/SignalPanel";
 
 export default function Home() {
@@ -12,18 +11,9 @@ export default function Home() {
         <div className="text-sm text-gray-400">AI Trading Terminal</div>
       </div>
 
-      {/* MAIN GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* MARKET */}
-        <div className="glass rounded-2xl p-4">
-          <MarketData />
-        </div>
-
-        {/* CHAT */}
-        <div className="glass rounded-2xl p-4 md:col-span-2">
-          <ChatAI />
-        </div>
+      {/* CHAT FULL */}
+      <div className="glass rounded-2xl p-4">
+        <ChatAI />
       </div>
 
       {/* SIGNAL PANEL */}
