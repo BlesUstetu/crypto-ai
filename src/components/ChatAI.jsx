@@ -1,44 +1,61 @@
-import { useState } from 'react'
-import { parseSignal } from '../lib/parser'
-import { useTradingStore } from '../store/tradingStore'
+import { useState } from "react";
+import { parseSignal } from "../lib/parser";
 
 export default function ChatAI() {
-  const [message, setMessage] = useState('')
-  const [chat, setChat] = useState([])
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
 
-  const addOrder = useTradingStore((s) => s.addOrder)
+  const send = () => {
+    if (!input) return;
 
-  const sendMessage = () => {
-    if (!message) return
+    const signal = parseSignal(input);
 
-    const parsed = parseSignal(message)
+    const aiResponse = generateAnalysis(signal);
 
-    if (parsed) {
-      addOrder(parsed)
-    }
+    setMessages(prev => [
+      ...prev,
+      { role: "user", content: input },
+      { role: "ai", content: aiResponse }
+    ]);
 
-    setChat([...chat, { text: message }])
-    setMessage('')
-  }
+    setInput("");
+  };
 
   return (
-    <div>
-      <div className="input-group">
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Enter signal..."
-        />
-        <button onClick={sendMessage}>Send</button>
-      </div>
-
-      <div className="chat">
-        {chat.map((c, i) => (
-          <div key={i} className="chat-item">
-            {c.text}
+    <div style={{ padding: 10 }}>
+      <div style={{ height: 300, overflow: "auto", marginBottom: 10 }}>
+        {messages.map((m, i) => (
+          <div key={i}>
+            <b>{m.role}:</b> {m.content}
           </div>
         ))}
       </div>
+
+      <input
+        value={input}
+        onChange={(e)=>setInput(e.target.value)}
+        onKeyDown={(e)=> e.key==="Enter" && send()}
+        style={{ width: "80%" }}
+      />
+      <button onClick={send}>Send</button>
     </div>
-  )
+  );
+}
+
+function generateAnalysis(s) {
+  if (!s.side) return "Tidak terdeteksi signal.";
+
+  let rr = null;
+  if (s.entry && s.tp && s.sl) {
+    rr = ((s.tp - s.entry) / (s.entry - s.sl)).toFixed(2);
+  }
+
+  return `
+Signal: ${s.side}
+Entry: ${s.entry || "-"}
+TP: ${s.tp || "-"}
+SL: ${s.sl || "-"}
+RR: ${rr || "-"}
+Rekomendasi: ${rr > 2 ? "Bagus" : "Kurang ideal"}
+`;
 }
