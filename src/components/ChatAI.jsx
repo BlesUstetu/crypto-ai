@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { parseSignal } from "../lib/parser";
+import { parseInput } from "../lib/parser";
 
 export default function ChatAI() {
   const [messages, setMessages] = useState([]);
