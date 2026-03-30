@@ -2,7 +2,11 @@ export function parseSignal(text) {
   const upper = text.toUpperCase();
 
   return {
-    side: upper.includes("LONG") ? "LONG" : upper.includes("SHORT") ? "SHORT" : null,
+    side: upper.includes("LONG")
+      ? "LONG"
+      : upper.includes("SHORT")
+      ? "SHORT"
+      : null,
     entry: extractNumber(text, "ENTRY"),
     sl: extractNumber(text, "SL"),
     tp: extractNumber(text, "TP"),
