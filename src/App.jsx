@@ -12,25 +12,32 @@ function NeuralUltraLite({ signal = "WAIT" }) {
   return (
     <div style={styles.loaderContainer}>
       <svg width="200" height="120">
-        <line x1="20" y1="60" x2="100" y2="20"
-          stroke={color} strokeWidth="1.5"
-          strokeDasharray="6 6"
-          style={styles.flow} />
-
-        <line x1="20" y1="60" x2="100" y2="100"
-          stroke={color} strokeWidth="1.5"
-          strokeDasharray="6 6"
-          style={styles.flowSlow} />
-
-        <line x1="100" y1="20" x2="180" y2="60"
-          stroke={color} strokeWidth="1.5"
-          strokeDasharray="6 6"
-          style={styles.flow} />
-
-        <line x1="100" y1="100" x2="180" y2="60"
-          stroke={color} strokeWidth="1.5"
-          strokeDasharray="6 6"
-          style={styles.flowSlow} />
+        {[20, 100].map((y, i) => (
+          <line
+            key={i}
+            x1="20"
+            y1="60"
+            x2="100"
+            y2={y}
+            stroke={color}
+            strokeWidth="1.5"
+            strokeDasharray="6 6"
+            style={i === 0 ? styles.flow : styles.flowSlow}
+          />
+        ))}
+        {[20, 100].map((y, i) => (
+          <line
+            key={i + 10}
+            x1="100"
+            y1={y}
+            x2="180"
+            y2="60"
+            stroke={color}
+            strokeWidth="1.5"
+            strokeDasharray="6 6"
+            style={i === 0 ? styles.flow : styles.flowSlow}
+          />
+        ))}
 
         {[
           { x: 20, y: 60 },
@@ -54,7 +61,6 @@ function NeuralUltraLite({ signal = "WAIT" }) {
           />
         ))}
       </svg>
-
       <div style={styles.loaderText}>AI processing...</div>
     </div>
   );
@@ -78,11 +84,11 @@ export default function App() {
 
   const chatRef = useRef(null);
 
-  /* inject animation sekali saja */
+  /* inject animation sekali */
   useEffect(() => {
-    if (!document.getElementById("neural-style")) {
+    if (!document.getElementById("neon-style")) {
       const style = document.createElement("style");
-      style.id = "neural-style";
+      style.id = "neon-style";
       style.innerHTML = `
         @keyframes flow {
           0% { stroke-dashoffset: 50; }
@@ -92,6 +98,10 @@ export default function App() {
           0% { transform: scale(0.8); opacity: 0.5; }
           50% { transform: scale(1.3); opacity: 1; }
           100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        @keyframes neonMove {
+          0% { background-position: 0% }
+          100% { background-position: 200% }
         }
       `;
       document.head.appendChild(style);
@@ -103,42 +113,29 @@ export default function App() {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [messages, loading]);
 
-  /* SEND MESSAGE */
   const sendMessage = async () => {
     if (!input) return;
 
-    const userMsg = { role: "user", text: input };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { role: "user", text: input }]);
     setInput("");
     setLoading(true);
 
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-          model,
-          mode,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input, model, mode }),
       });
 
       const data = await res.json();
-
-      if (!res.ok || data.error) {
-        throw new Error(data.error || "API Error");
-      }
+      if (!res.ok || data.error) throw new Error(data.error);
 
       setMessages((prev) => [
         ...prev,
         { role: "ai", text: data.text || "No response" },
       ]);
 
-      if (data.signal) {
-        setSignal(data.signal);
-      }
+      if (data.signal) setSignal(data.signal);
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -149,6 +146,13 @@ export default function App() {
     }
   };
 
+  const neonColor =
+    signal.type === "BUY"
+      ? "#22c55e"
+      : signal.type === "SELL"
+      ? "#ef4444"
+      : "#3b82f6";
+
   return (
     <div style={styles.app}>
       {/* HEADER */}
@@ -157,9 +161,35 @@ export default function App() {
         <div style={styles.subtitle}>AI Trading Terminal</div>
       </div>
 
+      {/* SIGNAL (NEON) */}
+      <div
+        style={{
+          ...styles.signal,
+          backgroundImage: `
+            linear-gradient(#0f172a, #0f172a),
+            linear-gradient(90deg, ${neonColor}, #3b82f6, ${neonColor})
+          `,
+        }}
+      >
+        <div>
+          <div style={styles.label}>Signal</div>
+          <div style={styles.signalText}>{signal.type}</div>
+        </div>
+
+        <div style={styles.signalRight}>
+          <div>Entry: {signal.entry}</div>
+          <div>TP: {signal.tp}</div>
+          <div>SL: {signal.sl}</div>
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <div style={styles.label}>Confidence</div>
+          <div>{signal.confidence}%</div>
+        </div>
+      </div>
+
       {/* PANEL */}
       <div style={styles.panel}>
-        {/* MODEL */}
         <div style={styles.row}>
           {["Claude", "GPT", "Mistral"].map((m) => (
             <button
@@ -175,7 +205,6 @@ export default function App() {
           ))}
         </div>
 
-        {/* MODE */}
         <div style={styles.row}>
           {["SCALP", "SWING"].map((m) => (
             <button
@@ -191,25 +220,14 @@ export default function App() {
           ))}
         </div>
 
-        {/* CHAT */}
         <div style={styles.chatArea} ref={chatRef}>
           {messages.map((msg, i) => (
-            <div
-              key={i}
-              style={{
-                textAlign: msg.role === "user" ? "right" : "left",
-                marginBottom: 6,
-              }}
-            >
-              <span
-                style={{
-                  background:
-                    msg.role === "user" ? "#3b82f6" : "#1f2937",
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  display: "inline-block",
-                }}
-              >
+            <div key={i} style={{ textAlign: msg.role === "user" ? "right" : "left", marginBottom: 6 }}>
+              <span style={{
+                background: msg.role === "user" ? "#3b82f6" : "#1f2937",
+                padding: "6px 10px",
+                borderRadius: 8
+              }}>
                 {msg.text}
               </span>
             </div>
@@ -218,7 +236,6 @@ export default function App() {
           {loading && <NeuralUltraLite signal={signal.type} />}
         </div>
 
-        {/* INPUT */}
         <div style={styles.inputBox}>
           <input
             placeholder="Tanya market..."
@@ -227,28 +244,7 @@ export default function App() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button style={styles.send} onClick={sendMessage}>
-            →
-          </button>
-        </div>
-      </div>
-
-      {/* SIGNAL */}
-      <div style={styles.signal}>
-        <div>
-          <div style={styles.label}>Signal</div>
-          <div style={styles.signalText}>{signal.type}</div>
-        </div>
-
-        <div style={styles.signalRight}>
-          <div>Entry: {signal.entry}</div>
-          <div>TP: {signal.tp}</div>
-          <div>SL: {signal.sl}</div>
-        </div>
-
-        <div style={{ textAlign: "right" }}>
-          <div style={styles.label}>Confidence</div>
-          <div>{signal.confidence}%</div>
+          <button style={styles.send} onClick={sendMessage}>→</button>
         </div>
       </div>
     </div>
@@ -268,9 +264,9 @@ const styles = {
   header: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: 16,
-    padding: 12,
-    borderRadius: 12,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 14,
     background: "#0f172a",
     border: "1px solid #1f2937",
   },
@@ -278,15 +274,28 @@ const styles = {
   title: { fontWeight: "bold" },
   subtitle: { color: "#888" },
 
+  signal: {
+    marginBottom: 12,
+    display: "flex",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 14,
+    border: "1px solid transparent",
+    backgroundOrigin: "border-box",
+    backgroundClip: "padding-box, border-box",
+    backgroundSize: "100% 100%, 200% 200%",
+    animation: "neonMove 4s linear infinite",
+  },
+
   panel: {
     background: "#0f172a",
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 14,
+    padding: 14,
     border: "1px solid #1f2937",
     display: "flex",
     flexDirection: "column",
-    gap: 10,
-    minHeight: 300,
+    gap: 12,
+    minHeight: 320,
   },
 
   row: { display: "flex", gap: 8 },
@@ -327,18 +336,7 @@ const styles = {
     cursor: "pointer",
   },
 
-  signal: {
-    marginTop: 16,
-    display: "flex",
-    justifyContent: "space-between",
-    background: "#0f172a",
-    padding: 16,
-    borderRadius: 12,
-    border: "1px solid #1f2937",
-  },
-
   signalRight: { display: "flex", flexDirection: "column" },
-
   label: { color: "#888", fontSize: 12 },
   signalText: { fontSize: 28, fontWeight: "bold" },
 
