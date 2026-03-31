@@ -162,3 +162,114 @@ export default function App() {
     </div>
   );
 }
+const styles = {
+  app: {
+    background: "linear-gradient(135deg,#020617,#020617,#0a0f1c)",
+    minHeight: "100vh",
+    padding: 16,
+    color: "white",
+    fontFamily: "Arial",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 12,
+    background: "#0f172a",
+    border: "1px solid #1f2937",
+  },
+
+  title: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+
+  subtitle: {
+    color: "#888",
+  },
+
+  panel: {
+    width: "100%",
+    background: "#0f172a",
+    borderRadius: 12,
+    padding: 12,
+    border: "1px solid #1f2937",
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    minHeight: 300,
+  },
+
+  row: {
+    display: "flex",
+    gap: 8,
+  },
+
+  button: {
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+  },
+
+  chatArea: {
+    flex: 1,
+    background: "#020617",
+    borderRadius: 10,
+    padding: 10,
+    overflowY: "auto",
+  },
+
+  inputBox: {
+    display: "flex",
+    gap: 8,
+  },
+
+  input: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    border: "none",
+    background: "#1f2937",
+    color: "white",
+  },
+
+  send: {
+    padding: "10px 14px",
+    borderRadius: 8,
+    border: "none",
+    background: "#3b82f6",
+    color: "white",
+    cursor: "pointer",
+  },
+
+  signal: {
+    marginTop: 16,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "#0f172a",
+    padding: 16,
+    borderRadius: 12,
+    border: "1px solid #1f2937",
+  },
+
+  signalRight: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+
+  label: {
+    color: "#888",
+    fontSize: 12,
+  },
+
+  signalText: {
+    fontSize: 28,
+    fontWeight: "bold",
+  },
+};
