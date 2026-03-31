@@ -38,6 +38,28 @@ function NeuralUltraLite({ signal = "WAIT" }) {
             style={i === 0 ? styles.flow : styles.flowSlow}
           />
         ))}
+
+        {[
+          { x: 20, y: 60 },
+          { x: 100, y: 20 },
+          { x: 100, y: 100 },
+          { x: 180, y: 60 },
+          { x: 60, y: 60 },
+          { x: 140, y: 60 },
+        ].map((n, i) => (
+          <circle
+            key={i}
+            cx={n.x}
+            cy={n.y}
+            r="5"
+            fill={color}
+            style={{
+              animation: "pulse 1.4s infinite",
+              animationDelay: `${i * 0.2}s`,
+              filter: `drop-shadow(0 0 6px ${color})`,
+            }}
+          />
+        ))}
       </svg>
       <div style={styles.loaderText}>AI processing...</div>
     </div>
@@ -49,8 +71,6 @@ export default function App() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [speechSupported, setSpeechSupported] = useState(true);
 
   const [signal, setSignal] = useState({
     type: "WAIT",
@@ -61,10 +81,8 @@ export default function App() {
   });
 
   const chatRef = useRef(null);
-  const textareaRef = useRef(null);
-  const recognitionRef = useRef(null);
 
-  /* ===== INIT STYLE ===== */
+  /* inject animation sekali */
   useEffect(() => {
     if (!document.getElementById("neon-style")) {
       const style = document.createElement("style");
@@ -74,93 +92,45 @@ export default function App() {
           0% { stroke-dashoffset: 50; }
           100% { stroke-dashoffset: 0; }
         }
+        @keyframes pulse {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          50% { transform: scale(1.3); opacity: 1; }
+          100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        @keyframes neonMove {
+          0% { background-position: 0% }
+          100% { background-position: 200% }
+        }
       `;
       document.head.appendChild(style);
     }
   }, []);
 
-  /* ===== AUTO SCROLL ===== */
+  /* auto scroll */
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [messages, loading]);
 
-  /* ===== SPEECH SETUP ===== */
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setSpeechSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "id-ID";
-    recognition.continuous = true;
-    recognition.interimResults = true;
-
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setInput(transcript);
-      autoResize(textareaRef.current);
-    };
-
-    recognition.onend = () => setListening(false);
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      recognition.stop(); // 🔥 cleanup fix
-    };
-  }, []);
-
-  const toggleMic = () => {
-    if (!recognitionRef.current) return;
-
-    if (listening) {
-      recognitionRef.current.stop();
-      setListening(false);
-    } else {
-      recognitionRef.current.start();
-      setListening(true);
-    }
-  };
-
-  /* ===== AUTO RESIZE (FIXED) ===== */
-  const autoResize = (el) => {
-    if (!el) return;
-    el.style.height = "0px";
-    el.style.height = el.scrollHeight + "px";
-  };
-
-  /* ===== SEND ===== */
   const sendMessage = async () => {
-    if (!input || loading) return;
-
-    // stop mic saat kirim
-    if (listening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setListening(false);
-    }
+    if (!input) return;
 
     setMessages((prev) => [...prev, { role: "user", text: input }]);
     setInput("");
     setLoading(true);
 
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
-
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+        }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "API error");
+      if (!res.ok || data.error) throw new Error(data.error);
 
       setMessages((prev) => [
         ...prev,
@@ -187,28 +157,40 @@ export default function App() {
 
   return (
     <div style={styles.app}>
+      {/* HEADER */}
       <div style={styles.header}>
-        <div>BTCUSDT</div>
-        <div style={{ color: "#888" }}>AI Trading Terminal</div>
+        <div style={styles.title}>BTCUSDT</div>
+        <div style={styles.subtitle}>AI Trading Terminal</div>
       </div>
 
+      {/* SIGNAL */}
       <div
         style={{
           ...styles.signal,
-          border: `1px solid ${neonColor}`,
+          backgroundImage: `
+            linear-gradient(#0f172a, #0f172a),
+            linear-gradient(90deg, ${neonColor}, #3b82f6, ${neonColor})
+          `,
         }}
       >
         <div>
-          <div>Signal</div>
-          <div style={{ fontSize: 24 }}>{signal.type}</div>
+          <div style={styles.label}>Signal</div>
+          <div style={styles.signalText}>{signal.type}</div>
         </div>
-        <div>
-          Entry: {signal.entry} <br />
-          TP: {signal.tp} <br />
-          SL: {signal.sl}
+
+        <div style={styles.signalRight}>
+          <div>Entry: {signal.entry}</div>
+          <div>TP: {signal.tp}</div>
+          <div>SL: {signal.sl}</div>
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <div style={styles.label}>Confidence</div>
+          <div>{signal.confidence}%</div>
         </div>
       </div>
 
+      {/* PANEL */}
       <div style={styles.panel}>
         <div style={styles.chatArea} ref={chatRef}>
           {messages.map((msg, i) => (
@@ -231,45 +213,19 @@ export default function App() {
               </span>
             </div>
           ))}
+
           {loading && <NeuralUltraLite signal={signal.type} />}
         </div>
 
         <div style={styles.inputBox}>
-          <textarea
-            ref={textareaRef}
-            value={input}
-            rows={1}
+          <input
             placeholder="Tanya market..."
-            style={styles.textarea}
-            onChange={(e) => {
-              setInput(e.target.value);
-              autoResize(e.target);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
+            style={styles.input}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-
-          {speechSupported && (
-            <button
-              onClick={toggleMic}
-              style={{
-                ...styles.mic,
-                background: listening ? "#ef4444" : "#1f2937",
-              }}
-            >
-              🎤
-            </button>
-          )}
-
-          <button
-            onClick={sendMessage}
-            style={styles.send}
-            disabled={loading}
-          >
+          <button style={styles.send} onClick={sendMessage}>
             →
           </button>
         </div>
@@ -281,86 +237,91 @@ export default function App() {
 /* ================= STYLE ================= */
 const styles = {
   app: {
+    background: "linear-gradient(135deg,#020617,#0a0f1c)",
     minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    background: "#020617",
     padding: 16,
     color: "white",
+    fontFamily: "Arial",
   },
 
   header: {
     display: "flex",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 14,
+    background: "#0f172a",
+    border: "1px solid #1f2937",
   },
 
+  title: { fontWeight: "bold" },
+  subtitle: { color: "#888" },
+
   signal: {
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    marginBottom: 12,
+    display: "flex",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 14,
+    border: "1px solid transparent",
+    backgroundOrigin: "border-box",
+    backgroundClip: "padding-box, border-box",
+    backgroundSize: "100% 100%, 200% 200%",
+    animation: "neonMove 4s linear infinite",
   },
 
   panel: {
-    flex: 1,
-    position: "relative",
+    background: "#0f172a",
+    borderRadius: 14,
+    padding: 14,
+    border: "1px solid #1f2937",
     display: "flex",
     flexDirection: "column",
+    gap: 12,
+    minHeight: 320,
   },
 
   chatArea: {
     flex: 1,
-    overflowY: "auto",
-    paddingBottom: 120,
-  },
-
-  inputBox: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    right: 10,
-    display: "flex",
-    gap: 8,
-    background: "#0f172a",
-    padding: 10,
+    background: "#020617",
     borderRadius: 10,
+    padding: 10,
+    overflowY: "auto",
   },
 
-  textarea: {
+  inputBox: { display: "flex", gap: 8 },
+
+  input: {
     flex: 1,
-    resize: "none",
-    border: "none",
-    borderRadius: 8,
     padding: 10,
+    borderRadius: 8,
+    border: "none",
     background: "#1f2937",
     color: "white",
-    outline: "none",
-    overflow: "hidden",
   },
 
   send: {
     padding: "10px 14px",
-    background: "#3b82f6",
-    border: "none",
     borderRadius: 8,
+    border: "none",
+    background: "#3b82f6",
     color: "white",
     cursor: "pointer",
   },
 
-  mic: {
-    padding: "10px 12px",
-    border: "none",
-    borderRadius: 8,
-    color: "white",
-    cursor: "pointer",
-  },
+  signalRight: { display: "flex", flexDirection: "column" },
+  label: { color: "#888", fontSize: 12 },
+  signalText: { fontSize: 28, fontWeight: "bold" },
 
   loaderContainer: {
-    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
     marginTop: 10,
   },
 
   loaderText: {
+    marginTop: 6,
     fontSize: 12,
     color: "#888",
   },
