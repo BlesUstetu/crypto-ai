@@ -68,8 +68,6 @@ function NeuralUltraLite({ signal = "WAIT" }) {
 
 /* ================= APP ================= */
 export default function App() {
-  const [mode, setMode] = useState("SCALP");
-  const [model, setModel] = useState("Claude");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -123,8 +121,12 @@ export default function App() {
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, model, mode }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+        }),
       });
 
       const data = await res.json();
@@ -161,7 +163,7 @@ export default function App() {
         <div style={styles.subtitle}>AI Trading Terminal</div>
       </div>
 
-      {/* SIGNAL (NEON) */}
+      {/* SIGNAL */}
       <div
         style={{
           ...styles.signal,
@@ -188,15 +190,25 @@ export default function App() {
         </div>
       </div>
 
-         {/* PANEL */}
+      {/* PANEL */}
+      <div style={styles.panel}>
         <div style={styles.chatArea} ref={chatRef}>
           {messages.map((msg, i) => (
-            <div key={i} style={{ textAlign: msg.role === "user" ? "right" : "left", marginBottom: 6 }}>
-              <span style={{
-                background: msg.role === "user" ? "#3b82f6" : "#1f2937",
-                padding: "6px 10px",
-                borderRadius: 8
-              }}>
+            <div
+              key={i}
+              style={{
+                textAlign: msg.role === "user" ? "right" : "left",
+                marginBottom: 6,
+              }}
+            >
+              <span
+                style={{
+                  background:
+                    msg.role === "user" ? "#3b82f6" : "#1f2937",
+                  padding: "6px 10px",
+                  borderRadius: 8,
+                }}
+              >
                 {msg.text}
               </span>
             </div>
@@ -213,7 +225,9 @@ export default function App() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button style={styles.send} onClick={sendMessage}>→</button>
+          <button style={styles.send} onClick={sendMessage}>
+            →
+          </button>
         </div>
       </div>
     </div>
@@ -265,16 +279,6 @@ const styles = {
     flexDirection: "column",
     gap: 12,
     minHeight: 320,
-  },
-
-  row: { display: "flex", gap: 8 },
-
-  button: {
-    padding: "6px 12px",
-    borderRadius: 8,
-    border: "none",
-    color: "white",
-    cursor: "pointer",
   },
 
   chatArea: {
