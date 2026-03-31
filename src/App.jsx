@@ -1,3 +1,2 @@
-export default function App(){
-  return <h1>APP OK ✅</h1>
-}
+import ChatAI from './components/ChatAI'; 
+export default function App(){return <ChatAI/>}
