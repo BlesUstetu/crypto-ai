@@ -1,0 +1,1 @@
+import ChatAI from './components/ChatAI'; export default function App(){return <ChatAI/>}
