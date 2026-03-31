@@ -188,38 +188,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* PANEL */}
-      <div style={styles.panel}>
-        <div style={styles.row}>
-          {["Claude", "GPT", "Mistral"].map((m) => (
-            <button
-              key={m}
-              onClick={() => setModel(m)}
-              style={{
-                ...styles.button,
-                background: model === m ? "#3b82f6" : "#2a2f3a",
-              }}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-
-        <div style={styles.row}>
-          {["SCALP", "SWING"].map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              style={{
-                ...styles.button,
-                background: mode === m ? "#3b82f6" : "#2a2f3a",
-              }}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
-
+         {/* PANEL */}
         <div style={styles.chatArea} ref={chatRef}>
           {messages.map((msg, i) => (
             <div key={i} style={{ textAlign: msg.role === "user" ? "right" : "left", marginBottom: 6 }}>
