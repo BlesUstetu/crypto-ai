@@ -1,7 +1,7 @@
 
 {
-  "name": "ai-trading-pro-v6",
-  "version": "3.0.0",
+  "name": "ai-trading-merged-v6",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "scripts": {
