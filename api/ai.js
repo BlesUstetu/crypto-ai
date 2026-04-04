@@ -1,10 +1,16 @@
 export async function runAI(input) {
-  // versi stabil dulu (anti error parsing)
+  const { delta, imbalance } = input;
+
+  let signal = "NO TRADE";
+
+  if (delta > 0 && imbalance > 1) signal = "LONG";
+  if (delta < 0 && imbalance < 1) signal = "SHORT";
+
   return [
     {
-      signal: input.delta > 0 ? "LONG" : "SHORT",
-      confidence: 70,
-      reason: "Based on delta + simple logic"
+      signal,
+      confidence: Math.floor(Math.random() * 20 + 70),
+      reason: `Delta ${delta.toFixed(2)} | Imbalance ${imbalance.toFixed(2)}`
     }
   ];
 }
