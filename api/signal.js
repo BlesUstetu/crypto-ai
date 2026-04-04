@@ -1,38 +1,39 @@
-import aggregate from "./aggregate.js";
-import news from "./news.js";
+import { getMarket } from "./aggregate.js";
+import { getNews } from "./news.js";
 import { runAI } from "./ai.js";
+import { saveTrade } from "./db.js";
 
-export default async function handler(req, res) {
+export async function GET() {
   try {
-    // 🔥 CALL INTERNAL FUNCTION (BUKAN FETCH)
-    const market = await new Promise(resolve =>
-      aggregate({}, { json: resolve })
-    );
+    const market = await getMarket();
+    const news = await getNews();
 
-    const sentiment = await new Promise(resolve =>
-      news({}, { json: resolve })
-    );
-
-    const input = {
-      ...market,
-      news: sentiment
-    };
+    const input = { ...market, news };
 
     const ai = await runAI(input);
 
     const signal = ai[0]?.signal || "NO TRADE";
     const confidence = ai[0]?.confidence || 0;
 
-    res.json({
+    // simpan trade
+    saveTrade({
+      time: Date.now(),
       signal,
       confidence,
-      detail: ai
+      price: market.price
+    });
+
+    return Response.json({
+      signal,
+      confidence,
+      detail: ai,
+      market
     });
 
   } catch (e) {
-    res.status(500).json({
-      error: "Signal error",
+    return Response.json({
+      error: true,
       message: e.message
-    });
+    }, { status: 500 });
   }
 }
