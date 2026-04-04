@@ -1,19 +1,10 @@
 
 {
-  "name": "ai-trading-merged-v6",
-  "version": "4.0.0",
+  "name": "ai-trading-final-vercel",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "node api/core/server.js"
-  },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zustand": "^4.5.2",
-    "ws": "^8.13.0",
     "axios": "^1.6.0"
   }
 }
