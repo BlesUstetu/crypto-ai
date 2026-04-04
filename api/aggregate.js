@@ -1,14 +1,19 @@
-export default async function handler(req, res) {
-  const data = {
-    price: 65000,
-    buy: 1200,
-    sell: 800,
-    bid: 5000,
-    ask: 3000
+export async function getMarket() {
+  // versi stabil dulu (bisa inject WS nanti)
+  const price = 65000 + Math.random() * 200;
+
+  const buy = Math.random() * 1000;
+  const sell = Math.random() * 1000;
+
+  return {
+    price,
+    buy,
+    sell,
+    delta: buy - sell,
+    imbalance: (buy + 1) / (sell + 1)
   };
+}
 
-  const delta = data.buy - data.sell;
-  const imbalance = data.bid / data.ask;
-
-  res.json({ ...data, delta, imbalance });
+export async function GET() {
+  return Response.json(await getMarket());
 }
