@@ -1,14 +1,27 @@
+import aggregate from "./aggregate.js";
+import news from "./news.js";
 import { runAI } from "./ai.js";
-import { saveTrade } from "./db.js";
 
-export default async function handler(req,res){
-  const market={price:65000};
-  const ai=await runAI(market);
+export default async function handler(req, res) {
+  // langsung panggil function, bukan fetch
+  const market = await new Promise(resolve =>
+    aggregate({}, { json: resolve })
+  );
 
-  const signal=ai[0].signal;
-  const confidence=ai[0].confidence;
+  const sentiment = await new Promise(resolve =>
+    news({}, { json: resolve })
+  );
 
-  saveTrade({time:Date.now(),signal,confidence});
+  const input = { ...market, news: sentiment };
 
-  res.json({signal,confidence,detail:ai});
+  const ai = await runAI(input);
+
+  const signal = ai[0]?.signal || "NO TRADE";
+  const confidence = ai[0]?.confidence || 0;
+
+  res.json({
+    signal,
+    confidence,
+    detail: ai
+  });
 }
